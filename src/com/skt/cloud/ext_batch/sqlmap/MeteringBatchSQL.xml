@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="meteringBatchSQL">
+
+	<select id="selectProjectList" resultType="java.util.HashMap">
+		SELECT
+			project_id,
+			project_name,
+			manage_type
+		FROM
+			tbl_project_info
+		WHERE
+			del_yn = 'N'
+	</select>
+	
+	<select id="selectServerList" resultType="java.util.HashMap">
+		SELECT
+			S.server_id,
+			S.server_name,
+			S.server_consist_idx,
+			S.op_type,
+			S.v_cpu,
+			S.v_memory,
+			S.fixed_ip,
+			I.ip_kind,
+			S.security_add_yn
+		FROM
+			tbl_server_info S
+			LEFT JOIN tbl_ip_info I ON S.fixed_ip = I.ip
+		WHERE
+			S.project_id = #{project_id}
+			AND S.del_yn = 'N'
+	</select>
+	
+	<select id="selectVolumeList" resultType="java.util.HashMap">
+		SELECT
+			volume_id,
+			volume_name,
+			volume_kind,
+			volume_type,
+			volume_size,
+			volume_status,
+			volume_image_id,
+			volume_snapshot_id
+		FROM
+			tbl_volume_info
+		WHERE
+			project_id = #{project_id}
+			AND server_id = #{server_id}
+			AND del_yn = 'N'
+	</select>
+	
+	<select id="selectSnapshotCount" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tbl_snapshot_info
+		WHERE
+			kind = #{kind}
+			AND device_id = #{device_id}
+	</select>
+	
+	<select id="selectMiddlewareCount" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tbl_server_middleware_consist_info
+		WHERE
+			server_consist_idx = #{server_consist_idx}
+	</select>
+	
+	<select id="selectLbaasList" resultType="java.util.HashMap">
+		SELECT
+			pool_id,
+			vip_id,
+			pool_name,
+			pool_desc,
+			protocol_port,
+			pool_type,
+			lb_method,
+			protocol,
+			subnet_id,
+			status
+		FROM
+			tbl_lbaas_pool_info
+		WHERE
+			project_id = #{project_id}
+			AND del_yn = 'N'
+	</select>
+	
+	<select id="selectMeteringCount" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tbl_metering_info
+		WHERE
+			project_id = #{project_id}
+			AND date = #{date}
+	</select>
+	
+	<insert id="insertMeteringInfo">
+		INSERT INTO
+			tbl_metering_info
+		(
+			basic,
+			project_id,
+			date,
+			v_cpu_op,
+			v_memory_op,
+			network_op,
+			v_cpu_dev,
+			v_memory_dev,
+			network_dev,
+			root,
+			app,
+			ssd,
+			hdd,
+			image,
+			ip,
+			lbaas_bas,
+			lbaas_bas_net,
+			lbaas_spc,
+			lbaas_spc_net,
+			os,
+			middleware,
+			security_tool,
+			ta_manage_server_count,
+			reg_user,
+			reg_date
+		)
+		VALUES
+		(
+			#{basic},
+			#{project_id},
+			#{date},
+			#{v_cpu_op},
+			#{v_memory_op},
+			#{network_op},
+			#{v_cpu_dev},
+			#{v_memory_dev},
+			#{network_dev},
+			#{root},
+			#{app},
+			#{ssd},
+			#{hdd},
+			#{image},
+			#{ip},
+			#{lbaas_bas},
+			#{lbaas_bas_net},
+			#{lbaas_spc},
+			#{lbaas_spc_net},
+			#{os},
+			#{middleware},
+			#{security_tool},
+			#{ta_manage_server_count},
+			#{reg_user},
+			NOW()
+		)
+	</insert>
+	
+</mapper>

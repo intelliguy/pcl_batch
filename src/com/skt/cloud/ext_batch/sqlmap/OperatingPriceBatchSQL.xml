@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="operatingPriceBatchSQL">
+
+	<select id="selectMeteringList" resultType="java.util.HashMap">
+		SELECT
+			project_id AS project_id,
+			SUM(basic) AS basic,
+			SUM(v_cpu_op) AS v_cpu_op,
+			SUM(v_memory_op) AS v_memory_op,
+			SUM(network_op) AS network_op,
+			SUM(v_cpu_dev) AS v_cpu_dev,
+			SUM(v_memory_dev) AS v_memory_dev,
+			SUM(network_dev) AS network_dev,
+			SUM(root) AS root,
+			SUM(app) AS app,
+			SUM(ssd) AS ssd,
+			SUM(hdd) AS hdd,
+			SUM(image) AS image,
+			SUM(ip) AS ip,
+			SUM(lbaas_bas) AS lbaas_bas,
+			SUM(lbaas_bas_net) AS lbaas_bas_net,
+			SUM(lbaas_spc) AS lbaas_spc,
+			SUM(lbaas_spc_net) AS lbaas_spc_net,
+			SUM(os) AS os,
+			SUM(middleware) AS middleware,
+			SUM(security_tool) AS security_tool,
+			SUM(ta_manage_server_count) AS ta_manage_server_count
+		FROM
+			tbl_metering_info
+		WHERE
+			date LIKE CONCAT(#{date},'%')
+		GROUP BY
+			project_id
+	</select>
+	
+	<select id="selectPriceMaster" resultType="int">
+		SELECT
+			price_idx
+		FROM
+			tbl_price_master
+		WHERE
+			price_type = '2'
+			AND (
+				(DATE_FORMAT(price_start_period, '%Y%m%d') &lt;= #{date} AND #{date} &lt; DATE_FORMAT(price_end_period, '%Y%m%d'))
+				OR default_yn = 'Y'
+			)
+		ORDER BY
+			default_yn DESC, price_start_period DESC LIMIT 1
+	</select>
+	
+	<select id="selectProjectRateList" resultType="java.util.HashMap">
+		SELECT
+			project_id,
+			rate
+		FROM
+			tbl_project_info
+	</select>
+	
+	<select id="selectServerConsistInfo" resultType="java.util.HashMap">
+		SELECT
+			server_consist_idx,
+			server_os_op_price,
+			server_mw_op_price
+		FROM
+			tbl_server_consist_info
+	</select>
+	
+	<select id="selectServerConsistIdxList" resultType="int">
+		SELECT
+			server_consist_idx
+		FROM
+			tbl_server_info
+		WHERE
+			project_id=#{project_id}
+	</select>
+	
+	<select id="selectPriceList" resultType="java.util.HashMap">
+		SELECT
+			price_idx,
+			price_code_id,
+			price,
+			rate,
+			list_price
+		FROM
+			tbl_price_info
+		WHERE
+			price_idx = #{price_idx}
+	</select>
+	
+	<select id="selectBillingCount" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			tbl_billing_info
+		WHERE
+			project_id = #{project_id}
+			AND date = #{date}
+	</select>
+	
+	<insert id="insertBillingInfo">
+		INSERT INTO
+			tbl_billing_info
+		(
+			project_id,
+			date,
+			basic,
+			v_cpu_op,
+			v_memory_op,
+			network_op,
+			v_cpu_dev,
+			v_memory_dev,
+			network_dev,
+			root,
+			app,
+			ssd,
+			hdd,
+			image,
+			ip,
+			lbaas_bas,
+			lbaas_bas_net,
+			lbaas_spc,
+			lbaas_spc_net,
+			os,
+			middleware,
+			security_tool,
+			ta_manage_server_count,
+			reg_user,
+			reg_date,
+			price_idx,
+			rate
+		)
+		VALUES
+		(
+			#{project_id},
+			#{date},
+			#{basic},
+			#{v_cpu_op},
+			#{v_memory_op},
+			#{network_op},
+			#{v_cpu_dev},
+			#{v_memory_dev},
+			#{network_dev},
+			#{root},
+			#{app},
+			#{ssd},
+			#{hdd},
+			#{image},
+			#{ip},
+			#{lbaas_bas},
+			#{lbaas_bas_net},
+			#{lbaas_spc},
+			#{lbaas_spc_net},
+			#{os},
+			#{middleware},
+			#{security_tool},
+			#{ta_manage_server_count},
+			#{reg_user},
+			NOW(),
+			#{price_idx},
+			#{rate}
+		)
+	</insert>
+	
+</mapper>

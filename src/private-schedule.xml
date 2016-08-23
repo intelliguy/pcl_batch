@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="EUC-KR"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+		">
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list><value>file:${privateBatch_home}/privateBatch.properties</value></list>
+		</property>
+	</bean>
+	<context:component-scan base-package="com.skt.cloud" />
+	<task:scheduler id="taskScheduler" pool-size="10"/>
+		<task:scheduled-tasks scheduler="taskScheduler">	
+ 			<task:scheduled ref="MeteringBatch" method="meteringBatchJob" cron="${batch.meteringBatchJob}"/>
+ 			<task:scheduled ref="OperatingPriceBatch" method="operatingPriceBatchJob" cron="${batch.operatingPriceBatchJob}"/>
+	</task:scheduled-tasks>
+</beans>
